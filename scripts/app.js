@@ -1247,7 +1247,7 @@ function renderKnownWords() {
     .sort((a, b) => wordPool.indexOf(a) - wordPool.indexOf(b))
     .forEach((word) => {
       const item = document.createElement("span");
-      item.className = "known-word";
+      item.className = `known-word ${word.length > 1 ? "phrase" : ""}`;
       item.textContent = word;
       known.appendChild(item);
     });
