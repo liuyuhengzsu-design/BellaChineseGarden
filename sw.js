@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-chinese-garden-v8";
+const CACHE_NAME = "bella-chinese-garden-v10";
 
 const ASSETS = [
   "./",
@@ -6,12 +6,12 @@ const ASSETS = [
   "./manifest.webmanifest",
   "./styles/main.css",
   "./scripts/content.js",
+  "./scripts/progress.js",
   "./scripts/app.js",
   "./assets/backgrounds/spring-courtyard.png",
   "./assets/backgrounds/study-room.png",
   "./assets/backgrounds/moon-courtyard.png",
   "./assets/backgrounds/lotus-pond.png",
-  "./assets/stickers/guofeng-sticker-sheet.png",
   "./assets/icons/icon-180.png",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
@@ -87,4 +87,8 @@ self.addEventListener("fetch", (event) => {
       });
     })
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });

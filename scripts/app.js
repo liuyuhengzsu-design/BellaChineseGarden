@@ -27,10 +27,14 @@ const state = {
   poemDeck: [],
   currentWord: "月",
   currentAntonym: null,
+  daily: {
+    startedAt: "",
+    completed: {},
+  },
 };
 
 const SAVE_KEY = "chineseGardenState";
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 4;
 
 
 const screens = {
@@ -43,6 +47,8 @@ const screens = {
 
 const toast = document.querySelector("#toast");
 const rewardBurst = document.querySelector("#rewardBurst");
+const updateToast = document.querySelector("#updateToast");
+const importFile = document.querySelector("#importFile");
 let audioContext;
 let audioOutput;
 let preferredVoice = null;
@@ -350,6 +356,7 @@ function saveState() {
       roomDecor: state.roomDecor,
       currentRhymeLesson: state.currentRhymeLesson,
       completedRhymePairs: Array.from(state.completedRhymePairs),
+      daily: state.daily,
     })
   );
 }
@@ -371,6 +378,7 @@ function loadState() {
     state.knownWords = new Set(parsed.knownWords ?? []);
     state.activeGardenRoom = parsed.activeGardenRoom ?? "spring";
     state.activeGardenPanel = parsed.activeGardenPanel ?? "shop";
+    state.daily = parsed.daily && typeof parsed.daily === "object" ? parsed.daily : { startedAt: getTodayKey(), completed: {} };
     state.decorInventory = Array.isArray(parsed.decorInventory) ? parsed.decorInventory : [];
     state.roomDecor = parsed.roomDecor && typeof parsed.roomDecor === "object" ? parsed.roomDecor : {};
     if (Array.isArray(parsed.placedDecor) && !state.roomDecor.spring) {
@@ -380,6 +388,7 @@ function loadState() {
       state.decorInventory.push(parsed.pendingDecor);
     }
     ensureGardenState();
+    ensureDailyState();
     state.currentRhymeLesson = Math.min(parsed.currentRhymeLesson ?? 0, rhymeSections.length - 1);
     state.completedRhymePairs = new Set(parsed.completedRhymePairs ?? []);
     saveState();
@@ -443,6 +452,7 @@ function markRhymePairComplete(pair, element) {
     playChime();
     createRewardBurst(element, [pair.left, pair.right]);
   }
+  completeDailyTask(getLearningDay() === 3 ? "rhyme-review" : "rhyme-play");
   saveState();
   renderRhymeProgress();
   if (!wasComplete && isCurrentRhymeLessonComplete()) {
@@ -911,6 +921,7 @@ function choosePoemWord(button, item) {
   state.currentPoemFound.add(item.word);
   updatePoemProgress();
   reward([item.word], button, "poem");
+  completeDailyTask("poem-find");
 
   if (state.currentPoemFound.size >= poem.targets.length) {
     document.querySelectorAll("#poemScene .scene-item").forEach((choice) => {
@@ -935,6 +946,7 @@ function speakPoem(options = {}) {
   const speechOptions = { ...options, flush: false };
   if (options.flush) clearSpeech();
   startPoemHighlight(poem, { includeTitle: true });
+  completeDailyTask(getLearningDay() === 3 ? "poem-review" : "poem-listen");
   speak(`${poem.title}。${poem.lines.join("")}`, speechOptions);
 }
 
@@ -944,6 +956,7 @@ function speakPoemLesson(options = {}) {
   const speechOptions = { ...options, flush: false };
   if (options.flush) clearSpeech();
   startPoemHighlight(poem, { includeTitle: true });
+  completeDailyTask(getLearningDay() === 3 ? "poem-review" : "poem-listen");
   speak(`${poem.title}。${poem.lines.join("")}。小小讲解。${explanation.join("")}`, speechOptions);
 }
 
@@ -978,6 +991,7 @@ function renderWords(settings = {}) {
           }
         });
         reward([word], button, "words");
+        completeDailyTask("word-find");
         showToast(`“${word}”住进字宝宝盒子了`);
       } else {
         speakWord(word, { flush: true });
@@ -1042,6 +1056,7 @@ function chooseAntonym(button, word) {
       }
     });
     reward([pair.question, pair.answer], button, "antonyms");
+    completeDailyTask("antonym-play");
     showToast(`答对了：${pair.question} 和 ${pair.answer}`);
     return;
   }
@@ -1292,6 +1307,7 @@ function placeDecor(index) {
   slots[index] = decor;
   const label = decor.label;
   state.selectedDecorId = null;
+  completeDailyTask("garden-place");
   saveState();
   renderGarden();
   showToast(`${label}放进花园了`);
@@ -1409,6 +1425,7 @@ function switchScreen(name) {
   if (name === "rhyme") {
     speak("声律小桥，选一个玩法开始吧。", { flush: true });
   }
+  renderDailyQuest();
 }
 
 function bindEvents() {
@@ -1432,6 +1449,7 @@ function bindEvents() {
   });
 
   document.querySelector("#readRhymeButton").addEventListener("click", () => {
+    completeDailyTask("rhyme-listen");
     const round = state.currentRhymeRound;
     if (round?.pair) {
       speak(`${round.pair.section}。${round.pair.left}对${round.pair.right}。`, { flush: true });
@@ -1456,6 +1474,12 @@ function bindEvents() {
   document.querySelector("#newWordButton").addEventListener("click", () => renderWords({ announce: true }));
   document.querySelector("#newAntonymButton").addEventListener("click", () => renderAntonyms({ announce: true }));
   document.querySelector("#clearRoomButton").addEventListener("click", clearActiveRoom);
+  document.querySelector("#exportButton").addEventListener("click", exportProgress);
+  document.querySelector("#importButton").addEventListener("click", () => importFile.click());
+  importFile.addEventListener("change", () => {
+    importProgress(importFile.files?.[0]);
+    importFile.value = "";
+  });
   document.querySelectorAll(".palette-tab").forEach((button) => {
     button.addEventListener("click", () => {
       state.activeGardenPanel = button.dataset.gardenPanel;
@@ -1473,7 +1497,9 @@ function bindEvents() {
     state.selectedDecorId = null;
     state.decorInventory = [];
     state.roomDecor = {};
+    state.daily = { startedAt: getTodayKey(), completed: {} };
     ensureGardenState();
+    ensureDailyState();
     state.currentRhymeLesson = 0;
     state.completedRhymePairs = new Set();
     saveState();
@@ -1490,10 +1516,33 @@ renderPoem();
 renderWords();
 renderAntonyms();
 renderGarden();
+renderDailyQuest();
 document.querySelector("#soundText").textContent = state.sound ? "朗读开" : "朗读关";
 
 if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").then((registration) => {
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+      const showUpdate = () => {
+        if (!updateToast) return;
+        updateToast.classList.add("show");
+        updateToast.onclick = () => {
+          registration.waiting?.postMessage({ type: "SKIP_WAITING" });
+        };
+      };
+      if (registration.waiting && navigator.serviceWorker.controller) showUpdate();
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) showUpdate();
+        });
+      });
+    }).catch(() => {});
   });
 }
