@@ -582,18 +582,17 @@ function renderRhymeProgress() {
 function renderRhymeStudy() {
   const section = getCurrentRhymeSection();
   const lines = section.lines.map((line) => line.text);
-  const currentLine = state.currentRhymeRound?.pair?.text || lines[0];
   const box = document.querySelector("#rhymeStudy");
   box.innerHTML = `
     <div class="rhyme-study-card">
       <div class="rhyme-study-copy">
         <span>听课讲字词</span>
-        <strong>${currentLine}</strong>
+        <strong>${section.title}</strong>
+        <div class="rhyme-lines">
+          ${lines.map((line) => `<button class="rhyme-line-chip" type="button">${line}</button>`).join("")}
+        </div>
       </div>
       <button class="listen-lesson" id="listenRhymeLesson" type="button">听课</button>
-    </div>
-    <div class="rhyme-lines">
-      ${lines.map((line) => `<button class="rhyme-line-chip" type="button">${line}</button>`).join("")}
     </div>
   `;
   document.querySelector("#listenRhymeLesson").addEventListener("click", () => {

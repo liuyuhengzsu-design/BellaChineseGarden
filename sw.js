@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-chinese-garden-v14";
+const CACHE_NAME = "bella-chinese-garden-v15";
 
 const ASSETS = [
   "./",

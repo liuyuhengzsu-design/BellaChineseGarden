@@ -692,9 +692,10 @@ h2 {
 
 .rhyme-study-copy {
   display: flex;
+  flex: 1 1 auto;
   min-width: 0;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .rhyme-study-card span {
@@ -706,15 +707,18 @@ h2 {
 }
 
 .rhyme-study-card strong {
-  display: block;
-  min-width: 0;
+  flex: 0 0 auto;
+  display: grid;
+  min-width: 46px;
+  min-height: 28px;
+  place-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(226, 245, 221, 0.9);
   margin-top: 0;
   color: var(--leaf-dark);
-  overflow: hidden;
-  font-size: 20px;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .listen-lesson {
@@ -731,8 +735,10 @@ h2 {
 .rhyme-lines {
   display: flex;
   flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 0;
   overflow-x: auto;
   padding-bottom: 2px;
   -webkit-overflow-scrolling: touch;
@@ -4259,6 +4265,10 @@ h1 {
   .rhyme-study-card {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .rhyme-study-copy {
+    align-items: center;
   }
 
   .lesson-card {
