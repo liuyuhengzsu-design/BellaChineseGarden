@@ -73,6 +73,55 @@ const pronunciationHints = {
   败: "失败的败",
 };
 
+const rhymeTermHints = {
+  云: "天上的白云，会慢慢飘。",
+  雨: "从云里落下来的雨点。",
+  雪: "冬天从天上飘下来的白雪。",
+  风: "吹过脸旁的风，看不见，但能感觉到。",
+  春: "春天，花草开始长出来。",
+  夏: "夏天，天气热，树叶很绿。",
+  暮: "傍晚，太阳快下山的时候。",
+  晨: "早晨，一天刚开始的时候。",
+  楼: "高高的楼。",
+  阁: "小楼或高一点的房子。",
+  户: "门，也可以表示一家人。",
+  窗: "窗户，可以看见外面。",
+  茶: "茶水，慢慢喝。",
+  酒: "大人喝的酒。",
+  诗: "有节奏、有画面的句子。",
+  来: "从远处到这里来。",
+  往: "从这里到别处去。",
+  密: "多又挤在一起。",
+  稀: "少，空空的。",
+  鱼: "水里游的小动物。",
+  鸟: "天上飞的小动物。",
+  虎: "老虎，很有力量。",
+  龙: "故事里的神奇动物。",
+  金: "金色，也表示珍贵的东西。",
+  玉: "温润好看的玉石。",
+  宝: "宝贝，珍贵的东西。",
+  珠: "圆圆亮亮的珠子。",
+  山: "高高的山。",
+  水: "会流动的水。",
+  花: "会开放的花。",
+  月: "夜晚天上的月亮。",
+  星: "夜空里一闪一闪的星星。",
+  晚照: "傍晚的阳光。",
+  晴空: "晴朗的天空。",
+  来鸿: "飞来的大雁。",
+  去燕: "飞走的燕子。",
+  宿鸟: "夜里停下来休息的鸟。",
+  鸣虫: "会叫的小虫。",
+  野叟: "住在乡野里的老人。",
+  溪童: "溪边的小孩子。",
+  观山: "看山。",
+  玩水: "在水边玩。",
+  绿竹: "绿色的竹子。",
+  苍松: "青绿色的松树。",
+  燕舞: "燕子飞舞。",
+  莺歌: "黄莺唱歌。",
+};
+
 function refreshVoices() {
   if (!("speechSynthesis" in window)) return;
   const voices = window.speechSynthesis.getVoices();
@@ -147,6 +196,26 @@ function runSpeechQueue() {
 
 function speakWord(word, options = {}) {
   return speak(pronunciationHints[word] || word, options);
+}
+
+function explainRhymeTerm(term) {
+  if (rhymeTermHints[term]) return `${term}，${rhymeTermHints[term]}`;
+  const chars = Array.from(term).filter((char) => /[\u4e00-\u9fff]/.test(char));
+  if (chars.length <= 1) return `${term}，读作${term}。`;
+  const charTalk = chars
+    .slice(0, 3)
+    .map((char) => rhymeTermHints[char] ? `${char}，${rhymeTermHints[char]}` : `${char}，是这个词里的一个字`)
+    .join("；");
+  return `${term}，是一个词。${charTalk}。`;
+}
+
+function getRhymeLessonTalk(section) {
+  const lines = section.lines.map((line) => line.text).join("");
+  const pairs = section.lines.flatMap((line) => line.pairs).slice(0, 5);
+  const explain = pairs
+    .map(([left, right]) => `${left}对${right}。${explainRhymeTerm(left)}。${explainRhymeTerm(right)}。`)
+    .join("");
+  return `${section.title}。先听原文。${lines}。再听字词。${explain}`;
 }
 
 function showToast(text) {
@@ -513,21 +582,23 @@ function renderRhymeProgress() {
 function renderRhymeStudy() {
   const section = getCurrentRhymeSection();
   const lines = section.lines.map((line) => line.text);
+  const currentLine = state.currentRhymeRound?.pair?.text || lines[0];
   const box = document.querySelector("#rhymeStudy");
   box.innerHTML = `
     <div class="rhyme-study-card">
-      <div>
-        <span>本课学习</span>
-        <strong>${section.title}</strong>
+      <div class="rhyme-study-copy">
+        <span>听课讲字词</span>
+        <strong>${currentLine}</strong>
       </div>
-      <button class="listen-lesson" id="listenRhymeLesson" type="button">听这一课</button>
+      <button class="listen-lesson" id="listenRhymeLesson" type="button">听课</button>
     </div>
     <div class="rhyme-lines">
       ${lines.map((line) => `<button class="rhyme-line-chip" type="button">${line}</button>`).join("")}
     </div>
   `;
   document.querySelector("#listenRhymeLesson").addEventListener("click", () => {
-    speak(`${section.title}。${lines.join("")}`, { flush: true });
+    completeDailyTask("rhyme-listen");
+    speak(getRhymeLessonTalk(section), { flush: true, rate: 0.64 });
   });
   box.querySelectorAll(".rhyme-line-chip").forEach((button) => {
     button.addEventListener("click", () => speak(button.textContent, { flush: true }));
@@ -557,12 +628,12 @@ function renderRhymes() {
   document.querySelector("#rhymeTitle").textContent = titles[state.currentRhymeMode];
   document.querySelector("#rhymeHint").textContent = hints[state.currentRhymeMode];
   renderRhymeProgress();
-  renderRhymeStudy();
 
   if (state.currentRhymeMode === "match") renderRhymeMatch();
   if (state.currentRhymeMode === "fill") renderRhymeFill();
   if (state.currentRhymeMode === "tap") renderRhymeTap();
   if (state.currentRhymeMode === "order") renderRhymeOrder();
+  renderRhymeStudy();
 }
 
 function renderRhymeMatch() {
@@ -1446,20 +1517,6 @@ function bindEvents() {
     saveState();
     if (!state.sound) clearSpeech();
     if (state.sound) speak("朗读打开了", { flush: true });
-  });
-
-  document.querySelector("#readRhymeButton").addEventListener("click", () => {
-    completeDailyTask("rhyme-listen");
-    const round = state.currentRhymeRound;
-    if (round?.pair) {
-      speak(`${round.pair.section}。${round.pair.left}对${round.pair.right}。`, { flush: true });
-      return;
-    }
-    if (round?.pairs?.length) {
-      speak(round.pairs.map((pair) => `${pair.left}对${pair.right}`).join("。"), { flush: true });
-      return;
-    }
-    speak("云对雨，雪对风。", { flush: true });
   });
 
   document.querySelector("#readPoemButton").addEventListener("click", () => {

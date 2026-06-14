@@ -1,4 +1,4 @@
-const CACHE_NAME = "bella-chinese-garden-v10";
+const CACHE_NAME = "bella-chinese-garden-v14";
 
 const ASSETS = [
   "./",
@@ -58,6 +58,7 @@ const ASSETS = [
   "./assets/decor/water-ripple.png",
   "./assets/decor/window-curtain.png",
   "./assets/characters/fairy.png",
+  "./assets/characters/playful-boy.png",
   "./assets/characters/schoolboy.png"
 ];
 

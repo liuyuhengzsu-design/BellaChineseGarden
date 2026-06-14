@@ -129,7 +129,7 @@ function renderDailyQuest() {
       switchScreen(task.screen);
       if (task.id.includes("listen") || task.id.includes("review")) {
         window.setTimeout(() => {
-          if (task.screen === "rhyme") document.querySelector("#readRhymeButton")?.click();
+          if (task.screen === "rhyme") document.querySelector("#listenRhymeLesson")?.click();
           if (task.screen === "poem") document.querySelector("#readPoemButton")?.click();
         }, 260);
       }
