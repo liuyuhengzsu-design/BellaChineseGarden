@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7efe1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="中文小花园" />
+    <title>中文小花园</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/icons/icon-180.png" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="garden-stage" aria-label="中文小花园">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">声律 · 唐诗 · 识字</p>
+            <h1>中文小花园</h1>
+          </div>
+          <button class="sound-button" id="soundButton" type="button" aria-label="开关朗读">
+            <span class="sound-icon">♪</span>
+            <span id="soundText">朗读开</span>
+          </button>
+        </header>
+
+        <section class="hero-garden">
+          <div class="sun" aria-hidden="true"></div>
+          <div class="cloud cloud-one" aria-hidden="true"></div>
+          <div class="cloud cloud-two" aria-hidden="true"></div>
+          <div class="hill hill-back" aria-hidden="true"></div>
+          <div class="hill hill-front" aria-hidden="true"></div>
+          <div class="pond" aria-hidden="true">
+            <span></span>
+          </div>
+          <div class="goose" aria-hidden="true">
+            <div class="goose-body"></div>
+            <div class="goose-neck"></div>
+            <div class="goose-head"></div>
+            <div class="goose-beak"></div>
+            <div class="goose-wing"></div>
+          </div>
+          <div class="hero-copy">
+            <p>今天想玩哪个？</p>
+            <strong id="welcomeLine">先去声律小桥，找一找“云”的朋友。</strong>
+          </div>
+        </section>
+
+        <nav class="mode-tabs" aria-label="游戏入口">
+          <button class="tab active" type="button" data-screen="rhyme">
+            <span class="tab-mark">桥</span>
+            <span>声律小桥</span>
+          </button>
+          <button class="tab" type="button" data-screen="poem">
+            <span class="tab-mark">诗</span>
+            <span>诗词花园</span>
+          </button>
+          <button class="tab" type="button" data-screen="words">
+            <span class="tab-mark">字</span>
+            <span>找字宝宝</span>
+          </button>
+          <button class="tab" type="button" data-screen="antonyms">
+            <span class="tab-mark">反</span>
+            <span>反义词乐园</span>
+          </button>
+          <button class="tab" type="button" data-screen="garden">
+            <span class="tab-mark">园</span>
+            <span>我的花园</span>
+          </button>
+        </nav>
+
+        <section class="game-board screen active" id="rhymeScreen">
+          <div class="panel-heading">
+            <div>
+              <p class="mini-label">声律启蒙</p>
+              <h2 id="rhymeTitle">对对子找朋友</h2>
+            </div>
+            <button class="round-action" type="button" id="readRhymeButton" aria-label="朗读声律">▶</button>
+          </div>
+          <div class="rhyme-progress" id="rhymeProgress"></div>
+          <div class="rhyme-study" id="rhymeStudy"></div>
+          <div class="rhyme-toolbar" id="rhymeModeTabs">
+            <button class="rhyme-mode active" type="button" data-rhyme-mode="match">配对</button>
+            <button class="rhyme-mode" type="button" data-rhyme-mode="fill">补空</button>
+            <button class="rhyme-mode" type="button" data-rhyme-mode="tap">拍节奏</button>
+            <button class="rhyme-mode" type="button" data-rhyme-mode="order">拼小桥</button>
+          </div>
+          <p class="hint" id="rhymeHint">点一个左边的字，再点它右边的朋友。</p>
+          <div class="rhyme-line" id="rhymeLine">云对雨，雪对风。</div>
+          <div class="rhyme-game" id="rhymeGame"></div>
+        </section>
+
+        <section class="game-board screen" id="poemScreen">
+          <div class="panel-heading">
+            <div>
+              <p class="mini-label">唐诗宋词</p>
+              <h2>先学诗再找字</h2>
+            </div>
+            <div class="poem-actions">
+              <button class="round-action" type="button" id="prevPoemButton" aria-label="上一首">‹</button>
+              <button class="round-action" type="button" id="readPoemButton" aria-label="朗读诗词">▶</button>
+              <button class="round-action" type="button" id="nextPoemButton" aria-label="下一首">›</button>
+            </div>
+          </div>
+          <div class="poem-picker" id="poemPicker"></div>
+          <p class="hint" id="poemPrompt">听完《咏鹅》，点一点诗里出现的东西。</p>
+          <div class="poem-card">
+            <div class="poem-scene" id="poemScene"></div>
+            <div class="poem-text" id="poemText"></div>
+          </div>
+        </section>
+
+        <section class="game-board screen" id="wordsScreen">
+          <div class="panel-heading">
+            <div>
+              <p class="mini-label">趣味识字</p>
+              <h2>找字宝宝</h2>
+            </div>
+            <button class="round-action" type="button" id="newWordButton" aria-label="换一个字">↻</button>
+          </div>
+          <p class="hint" id="wordPrompt">请找到“月”。</p>
+          <div class="word-playground" id="wordPlayground"></div>
+        </section>
+
+        <section class="game-board screen" id="antonymsScreen">
+          <div class="panel-heading">
+            <div>
+              <p class="mini-label">词语感觉</p>
+              <h2>反义词乐园</h2>
+            </div>
+            <button class="round-action" type="button" id="newAntonymButton" aria-label="换一题">↻</button>
+          </div>
+          <p class="hint" id="antonymPrompt">谁是“大”的反义词？</p>
+          <div class="antonym-game">
+            <div class="antonym-stage" id="antonymStage">
+              <div class="opposite-sign left" id="leftSign">大</div>
+              <div class="kid kid-left" aria-hidden="true">
+                <img class="kid-image" src="./assets/characters/schoolboy.png" alt="" />
+                <span class="kid-head"></span>
+                <span class="kid-body"></span>
+                <span class="kid-arm one"></span>
+                <span class="kid-arm two"></span>
+                <span class="kid-leg one"></span>
+                <span class="kid-leg two"></span>
+              </div>
+              <div class="kid kid-right" aria-hidden="true">
+                <img class="kid-image" src="./assets/characters/fairy.png" alt="" />
+                <span class="kid-head"></span>
+                <span class="kid-body"></span>
+                <span class="kid-arm one"></span>
+                <span class="kid-arm two"></span>
+                <span class="kid-leg one"></span>
+                <span class="kid-leg two"></span>
+              </div>
+              <div class="opposite-sign right" id="rightSign">小</div>
+              <div class="action-caption" id="actionCaption">选对后，小朋友会做动作</div>
+              <div class="stage-ground"></div>
+            </div>
+            <div class="antonym-options" id="antonymOptions"></div>
+          </div>
+        </section>
+
+        <section class="game-board screen" id="gardenScreen">
+          <div class="panel-heading">
+            <div>
+              <p class="mini-label">成长记录</p>
+              <h2>我的中文花园</h2>
+            </div>
+            <button class="plain-action" type="button" id="resetButton">重新开始</button>
+          </div>
+          <div class="garden-summary">
+            <div class="summary-card resource-card">
+              <b>宝</b>
+              <div class="resource-line">
+                <span><strong id="starCount">0</strong> 星星</span>
+                <span><strong id="flowerCount">0</strong> 小花</span>
+              </div>
+              <p>可以兑换装饰</p>
+            </div>
+            <div class="summary-card literacy-card">
+              <b>字</b>
+              <span id="knownCount">0</span>
+              <p>认识的字宝宝</p>
+            </div>
+            <div class="summary-card game-progress-card">
+              <b>玩</b>
+              <div class="game-stats" id="gameStats"></div>
+            </div>
+          </div>
+          <div class="room-tabs" id="roomPicker"></div>
+          <div class="garden-workbench">
+            <div class="garden-toolbox">
+              <section class="garden-panel garden-palette">
+                <div class="palette-tabs" role="tablist" aria-label="装饰选择">
+                  <button class="palette-tab active" type="button" data-garden-panel="shop">装饰铺子</button>
+                  <button class="palette-tab" type="button" data-garden-panel="bag">我的背包</button>
+                </div>
+                <div class="palette-view active" id="decorShopView">
+                  <div class="decor-shop" id="decorShop"></div>
+                </div>
+                <div class="palette-view" id="decorInventoryView">
+                  <p class="garden-note" id="inventoryHint">先去装饰铺子挑摆件，再点背包里的摆件去贴。</p>
+                  <div class="decor-inventory" id="decorInventory"></div>
+                </div>
+              </section>
+            </div>
+            <div class="garden-room-wrap">
+              <div class="room-title">
+                <div>
+                  <h3 id="roomTitle">春日小院</h3>
+                  <p id="roomHint">适合种花、放风车和小桥。</p>
+                </div>
+                <button class="plain-action" type="button" id="clearRoomButton">收回本房间</button>
+              </div>
+              <div class="my-garden room-spring" id="myGarden"></div>
+            </div>
+          </div>
+          <div class="word-box">
+            <h3>我的字宝宝</h3>
+            <div id="knownWords"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="reward-burst" id="rewardBurst" aria-hidden="true"></div>
+    <script src="./scripts/content.js"></script>
+    <script src="./scripts/app.js"></script>
+  </body>
+</html>
